@@ -1,49 +1,33 @@
 apiVersion: karpenter.sh/v1alpha5
 kind: Provisioner
 metadata:
-  name: default
+  name: demo
 spec:
-  # Resource limits
   limits:
     resources:
-      cpu: 1000
-
-  # Node requirements  
+      cpu: 100
   requirements:
     - key: kubernetes.io/arch
       operator: In
       values: ["amd64"]
     - key: karpenter.sh/capacity-type
       operator: In
-      values: ["on-demand", "spot"] 
+      values: ["on-demand"]
     - key: karpenter.k8s.aws/instance-category
       operator: In
       values: ["c", "m", "r"]
-
-  # Node properties
   providerRef:
-    name: default
-
-  # Node lifetime
+    name: demo
   ttlSecondsAfterEmpty: 30
 ---
 apiVersion: karpenter.k8s.aws/v1alpha1
-kind: AWSNodePool
+kind: AWSNodeTemplate
 metadata:
-  name: default
+  name: demo
 spec:
-  # AMI Family
   amiFamily: AL2
-
-  # Subnet discovery
+  instanceProfile: eks-decc9b78-7c7f-93fd-cc3a-f9c1f4ee4ddc
   subnetSelector:
     karpenter.sh/discovery: pablo-karpenter-demo
-
-  # Security group discovery  
   securityGroupSelector:
     karpenter.sh/discovery: pablo-karpenter-demo
-
-  # User data
-  userData: |
-    #!/bin/bash
-    /etc/eks/bootstrap.sh pablo-karpenter-demo

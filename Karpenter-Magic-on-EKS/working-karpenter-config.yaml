@@ -3,9 +3,14 @@ kind: EC2NodeClass
 metadata:
   name: default
 spec:
-  # AMI Family - Amazon Linux 2023 is recommended
+  # AMI Family - Amazon Linux 2023 
   amiFamily: AL2023
   
+  # Use the latest EKS optimized AMI
+  amiSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: pablo-karpenter-demo
+        
   # Subnet selection - Karpenter will discover subnets tagged for the cluster  
   subnetSelectorTerms:
     - tags:
@@ -16,20 +21,13 @@ spec:
     - tags:
         karpenter.sh/discovery: pablo-karpenter-demo
         
-  # Instance profile for nodes (will be created automatically by EKS)
+  # Instance profile for nodes 
   role: "KarpenterNodeInstanceRole"
   
-  # User Data (optional customization)
+  # User Data to join the EKS cluster
   userData: |
     #!/bin/bash
     /etc/eks/bootstrap.sh pablo-karpenter-demo
-    
-  # Instance metadata options  
-  metadataOptions:
-    httpEndpoint: enabled
-    httpProtocolIPv6: disabled
-    httpPutResponseHopLimit: 1
-    httpTokens: required
 ---
 apiVersion: karpenter.sh/v1
 kind: NodePool  
@@ -55,7 +53,7 @@ spec:
           values: ["linux"]
         - key: karpenter.sh/capacity-type
           operator: In  
-          values: ["spot", "on-demand"]  # Mix of spot and on-demand
+          values: ["on-demand"]  # Start with on-demand for reliability
         - key: karpenter.k8s.aws/instance-category
           operator: In
           values: ["c", "m", "r"]  # Compute, Memory, General purpose
@@ -64,22 +62,13 @@ spec:
           values: ["2"]  # Only newer generation instances
           
       # Node properties  
-      expireAfter: 720h  # 30 days
-      
-      # Taints (optional)
-      taints:
-        - key: example.com/special-workload
-          value: "true"
-          effect: NoSchedule
+      expireAfter: 24h  # Expire after 24 hours for demo
           
   # Resource limits
   limits:
-    cpu: 1000    # Max 1000 vCPU across all nodes
-    memory: 1000Gi # Max 1000 GB RAM
+    cpu: 100    # Max 100 vCPU for demo
     
   # Disruption settings
   disruption:
-    consolidationPolicy: WhenEmptyOrUnderutilized
-    consolidateAfter: 1m
-    budgets:
-    - nodes: "10%"  # Don't disrupt more than 10% of nodes at once
+    consolidationPolicy: WhenEmpty
+    consolidateAfter: 30s  # Quick consolidation for demo

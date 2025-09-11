@@ -1,0 +1,20 @@
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  name: default
+spec:
+  # AMI Family
+  amiFamily: AL2
+  
+  # Subnet discovery
+  subnetSelector:
+    karpenter.sh/discovery: pablo-karpenter-demo
+    
+  # Security group discovery  
+  securityGroupSelector:
+    karpenter.sh/discovery: pablo-karpenter-demo
+    
+  # User data
+  userData: |
+    #!/bin/bash
+    /etc/eks/bootstrap.sh pablo-karpenter-demo
