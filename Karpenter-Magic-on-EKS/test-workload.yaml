@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karpenter-test
+  namespace: default
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: karpenter-test
+  template:
+    metadata:
+      labels:
+        app: karpenter-test
+    spec:
+      containers:
+      - name: test-container
+        image: nginx:latest
+        resources:
+          requests:
+            cpu: 1000m      # Request 1 CPU per pod
+            memory: 1Gi     # Request 1 GB RAM per pod
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: karpenter-test-service
+spec:
+  selector:
+    app: karpenter-test
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP

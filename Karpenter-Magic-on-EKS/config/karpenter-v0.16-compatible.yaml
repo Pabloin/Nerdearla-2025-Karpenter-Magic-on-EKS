@@ -1,0 +1,62 @@
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: default
+spec:
+  # Resource limits
+  limits:
+    resources:
+      cpu: 1000
+      memory: 1000Gi
+
+  # Node requirements  
+  requirements:
+    - key: kubernetes.io/arch
+      operator: In
+      values: ["amd64"]
+    - key: karpenter.sh/capacity-type
+      operator: In
+      values: ["spot", "on-demand"] 
+    - key: karpenter.k8s.aws/instance-category
+      operator: In
+      values: ["c", "m", "r"]
+    - key: karpenter.k8s.aws/instance-generation
+      operator: Gt
+      values: ["2"]
+
+  # Node properties
+  providerRef:
+    name: default
+
+  # Node lifetime
+  ttlSecondsAfterEmpty: 30
+
+  # Taints (optional)
+  taints:
+    - key: CriticalAddonsOnly
+      operator: Exists
+
+---
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodePool
+metadata:
+  name: default
+spec:
+  # AMI Family
+  amiFamily: AL2
+
+  # Subnet discovery
+  subnetSelector:
+    karpenter.sh/discovery: pablo-karpenter-demo
+
+  # Security group discovery  
+  securityGroupSelector:
+    karpenter.sh/discovery: pablo-karpenter-demo
+
+  # Instance profile
+  instanceProfile: KarpenterNodeInstanceRole
+
+  # User data
+  userData: |
+    #!/bin/bash
+    /etc/eks/bootstrap.sh pablo-karpenter-demo
