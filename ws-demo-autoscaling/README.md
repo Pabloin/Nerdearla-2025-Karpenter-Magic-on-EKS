@@ -20,6 +20,23 @@ kubectl scale deployment nginx-scale-test --replicas=1
 ## Show immediate pod termination
 kubectl get pods -l app=nginx-scale-test
 
+# -----[ TIMING MEASUREMENTS ]----------------------------
+
+## Scale to 1 replica (timing baseline)
+date && kubectl scale deployment nginx-scale-test --replicas=1 && kubectl get nodes
+
+## Scale to 20 replicas (measure scale-up time)
+date && kubectl scale deployment nginx-scale-test --replicas=20
+while true; do clear; kubectl get nodes; echo; kubectl get pods -l app=nginx-scale-test; sleep 5; done
+
+## Back to 1 replica (measure scale-down)
+date && kubectl scale deployment nginx-scale-test --replicas=1
+while true; do clear; kubectl get nodes; echo; kubectl get pods -l app=nginx-scale-test; sleep 5; done
+
+## Record timestamps
+echo "Cluster Autoscaler Timing:" > autoscaler-times.txt
+date >> autoscaler-times.txt
+
 
 
 # -----[ AUTOSCALER ]-----------------------------------------------
