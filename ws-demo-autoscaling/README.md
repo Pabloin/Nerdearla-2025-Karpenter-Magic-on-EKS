@@ -26,12 +26,10 @@ kubectl get pods -l app=nginx-scale-test
 date && kubectl scale deployment nginx-scale-test --replicas=1 && kubectl get nodes
 
 ## Scale to 20 replicas (measure scale-up time)
-date && kubectl scale deployment nginx-scale-test --replicas=20
-while true; do clear; kubectl get nodes; echo; kubectl get pods -l app=nginx-scale-test; sleep 5; done
+date && kubectl scale deployment nginx-scale-test --replicas=20 && watch "kubectl get nodes; echo; kubectl get pods -l app=nginx-scale-test"
 
 ## Back to 1 replica (measure scale-down)
-date && kubectl scale deployment nginx-scale-test --replicas=1
-while true; do clear; kubectl get nodes; echo; kubectl get pods -l app=nginx-scale-test; sleep 5; done
+date && kubectl scale deployment nginx-scale-test --replicas=1 && watch "kubectl get nodes; echo; kubectl get pods -l app=nginx-scale-test"
 
 ## Record timestamps
 echo "Cluster Autoscaler Timing:" > autoscaler-times.txt
