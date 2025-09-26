@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-scale-test
+  labels:
+    app: nginx-scale-test
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: nginx-scale-test
+  template:
+    metadata:
+      labels:
+        app: nginx-scale-test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.20
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        ports:
+        - containerPort: 80
